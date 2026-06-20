@@ -17,19 +17,28 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
+def _split_env_list(name: str, default: str) -> list[str]:
+    return [
+        item.strip()
+        for item in os.environ.get(name, default).split(',')
+        if item.strip()
+    ]
+
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
-    if host.strip()
+    host
+    for host in _split_env_list(
+        'DJANGO_ALLOWED_HOSTS',
+        '127.0.0.1,localhost,.ngrok-free.app,.ngrok-free.dev,.ngrok.io',
+    )
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.ngrok-free.app',
-    'https://*.ngrok-free.dev',
-    'https://*.ngrok.io',
-    'http://localhost',
-    'http://127.0.0.1',
-]
+CSRF_TRUSTED_ORIGINS = _split_env_list(
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
+    (
+        'http://localhost,http://127.0.0.1,'
+        'https://*.ngrok-free.app,https://*.ngrok-free.dev,https://*.ngrok.io'
+    ),
+)
 
 
 # Application definition

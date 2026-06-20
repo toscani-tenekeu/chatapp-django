@@ -158,6 +158,10 @@ Pour capturer une instance deja lancee ailleurs, utilisez `CHATAPP_BASE_URL`, pa
 
 Les tests couvrent l'inscription, la connexion par email et le controle d'acces aux salons. Les captures automatisent en complement un parcours fonctionnel complet de l'interface.
 
+## Exposer l'application avec ngrok
+
+Pour acceder a l'application depuis une URL ngrok, les reglages par defaut autorisent deja les domaines `*.ngrok-free.app`, `*.ngrok-free.dev` et `*.ngrok.io` dans `ALLOWED_HOSTS` et `CSRF_TRUSTED_ORIGINS`. Si besoin, surchargez ces valeurs dans votre fichier `.env`.
+
 ## Structure du projet
 
 ```text
