@@ -1,4 +1,5 @@
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -20,6 +21,7 @@ from playwright.sync_api import sync_playwright
 
 BASE_URL = os.environ.get("CHATAPP_BASE_URL", "http://127.0.0.1:8000")
 OUTPUT_DIR = BASE_DIR / "docs" / "screenshots"
+SCREENSHOTS_DIR = BASE_DIR / "screenshots"
 DESKTOP = {"width": 1440, "height": 1000}
 MOBILE = {"width": 390, "height": 844}
 
@@ -33,10 +35,10 @@ def capture(page, name, selector=None):
 
 
 def login(page):
-    page.goto(f"{BASE_URL}/signin/")
+    page.goto(f"{BASE_URL}/signin/", wait_until="domcontentloaded")
     page.locator("[name=email]").fill("alice@example.com")
     page.locator("[name=password]").fill("demo-pass-123")
-    page.locator("button[type=submit]").click()
+    page.locator("form").evaluate("form => form.submit()")
     page.wait_for_selector(".app")
 
 
@@ -85,71 +87,79 @@ def app_server():
 
 
 def capture_gallery(page):
-    page.goto(f"{BASE_URL}/signin/")
+    page.goto(f"{BASE_URL}/signin/", wait_until="domcontentloaded")
     capture(page, "01-signin.png", ".auth-box")
 
     page.locator("[name=email]").fill("alice@example.com")
     page.locator("[name=password]").fill("wrong-password")
-    page.locator("button[type=submit]").click()
+    page.locator("form").evaluate("form => form.submit()")
     capture(page, "02-signin-error.png", ".messages-flash")
 
-    page.goto(f"{BASE_URL}/signup/")
+    page.goto(f"{BASE_URL}/signup/", wait_until="domcontentloaded")
     capture(page, "03-signup.png", ".auth-box")
 
     login(page)
     capture(page, "04-home-social-states.png", "#pending-section")
 
-    page.goto(f"{BASE_URL}/?q=e")
+    page.goto(f"{BASE_URL}/?q=e", wait_until="domcontentloaded")
     capture(page, "05-search-users-rooms.png", ".search-panel")
 
-    page.goto(f"{BASE_URL}/?q=introuvable")
+    page.goto(f"{BASE_URL}/?q=introuvable", wait_until="domcontentloaded")
     capture(page, "06-search-empty.png", ".search-panel")
 
-    page.goto(f"{BASE_URL}/room/general/")
+    page.goto(f"{BASE_URL}/room/general/", wait_until="domcontentloaded")
     capture(page, "07-room-general.png", "#messages")
 
-    page.goto(f"{BASE_URL}/room/frontend/")
+    page.goto(f"{BASE_URL}/room/frontend/", wait_until="domcontentloaded")
     capture(page, "08-room-frontend.png", "#messages")
 
-    page.goto(f"{BASE_URL}/dm/bob/")
+    page.goto(f"{BASE_URL}/dm/bob/", wait_until="domcontentloaded")
     capture(page, "09-direct-message-bob.png", "#messages")
 
-    page.goto(f"{BASE_URL}/dm/carole/")
+    page.goto(f"{BASE_URL}/dm/carole/", wait_until="domcontentloaded")
     capture(page, "10-direct-message-carole.png", "#messages")
 
-    page.goto(f"{BASE_URL}/")
+    page.goto(f"{BASE_URL}/", wait_until="domcontentloaded")
     page.evaluate("localStorage.setItem('nexchat-theme', 'light')")
-    page.reload()
+    page.reload(wait_until="domcontentloaded")
     capture(page, "11-home-light-theme.png", ".app")
 
     page.evaluate("localStorage.setItem('nexchat-theme', 'dark')")
     page.set_viewport_size(MOBILE)
-    page.goto(f"{BASE_URL}/")
+    page.goto(f"{BASE_URL}/", wait_until="domcontentloaded")
     capture(page, "12-mobile-home.png", ".mobile-header")
 
     page.locator("#hamburger").click()
     capture(page, "13-mobile-navigation.png", ".sidebar.open")
 
-    page.goto(f"{BASE_URL}/room/general/")
+    page.goto(f"{BASE_URL}/room/general/", wait_until="domcontentloaded")
     capture(page, "14-mobile-room.png", "#messages")
 
     page.locator("#members-btn").click()
     capture(page, "15-mobile-room-members.png", ".room-sidebar.open")
 
-    page.goto(f"{BASE_URL}/dm/bob/")
+    page.goto(f"{BASE_URL}/dm/bob/", wait_until="domcontentloaded")
     capture(page, "16-mobile-direct-message.png", "#messages")
 
 
 if __name__ == "__main__":
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
     for old_capture in OUTPUT_DIR.glob("*.png"):
+        old_capture.unlink()
+    for old_capture in SCREENSHOTS_DIR.glob("*.png"):
         old_capture.unlink()
 
     with app_server(), sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
         page = browser.new_page(viewport=DESKTOP, device_scale_factor=1)
+        page.route("https://fonts.googleapis.com/**", lambda route: route.abort())
+        page.route("https://fonts.gstatic.com/**", lambda route: route.abort())
         try:
             capture_gallery(page)
         finally:
             browser.close()
+    for generated_capture in OUTPUT_DIR.glob("*.png"):
+        shutil.copy2(generated_capture, SCREENSHOTS_DIR / generated_capture.name)
     print(f"Screenshots saved to {OUTPUT_DIR.resolve()}")
+    print(f"Screenshots copied to {SCREENSHOTS_DIR.resolve()}")

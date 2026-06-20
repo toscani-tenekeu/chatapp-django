@@ -1,5 +1,5 @@
 {% extends 'chat/base.html' %}
-{% block title %}KmerHosting Chat{% endblock %}
+{% block title %}Chat App{% endblock %}
 {% block extra_css %}
 <style>
   body { overflow:hidden; }
@@ -113,13 +113,13 @@
 <div id="toast-container"></div>
 <div class="mobile-header" id="mobile-header">
   <button class="hamburger" id="hamburger" aria-label="Open menu">&#9776;</button>
-  <div class="logo"><div class="logo-dot"></div><span class="logo-name">KmerHosting Chat</span></div>
+  <div class="logo"><div class="logo-dot"></div><span class="logo-name">Chat App</span></div>
 </div>
 <div id="sidebar-overlay" class="sidebar-overlay"></div>
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo"><div class="logo-dot"></div><span class="logo-name">KmerHosting Chat</span></div>
+      <div class="logo"><div class="logo-dot"></div><span class="logo-name">Chat App</span></div>
       <span class="user-badge">{{ request.user.username }}</span>
       <button class="sidebar-close" id="sidebar-close" aria-label="Close menu">&#10005;</button>
     </div>

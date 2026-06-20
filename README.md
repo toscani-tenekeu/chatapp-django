@@ -1,4 +1,6 @@
-# KmerHosting Chat
+# Chat App
+
+**By Toscani TENEKEU**
 
 Messagerie temps reel open source construite avec **Django**, **Channels**, **Redis** et **Cassandra**. L'application propose des conversations privees, des salons de groupe, un systeme d'amis, la presence en ligne et une interface responsive avec themes clair et sombre.
 
@@ -44,37 +46,29 @@ flowchart LR
 
 Le projet utilise trois consumers dans `chat/consumers.py` : `NotificationConsumer` pour la presence et les alertes, `DMConsumer` pour les messages prives et `ChatConsumer` pour les salons. Les tables Cassandra sont creees automatiquement au premier acces par `chat/cassandra_client.py`.
 
-## Galerie des etats
+## Galerie complete des etats
 
-| Accueil et relations sociales | Recherche utilisateurs et salons |
+Les 16 captures sont affichees directement ci-dessous.
+
+Elles sont disponibles dans `screenshots/` et conservees aussi dans `docs/screenshots/` pour la documentation.
+
+| Connexion | Erreur de connexion |
 |---|---|
-| ![Accueil](docs/screenshots/04-home-social-states.png) | ![Recherche](docs/screenshots/05-search-users-rooms.png) |
-| Message prive | Theme clair |
-| ![Message prive](docs/screenshots/09-direct-message-bob.png) | ![Theme clair](docs/screenshots/11-home-light-theme.png) |
-| Navigation mobile | Membres d'un salon sur mobile |
-| ![Navigation mobile](docs/screenshots/13-mobile-navigation.png) | ![Membres mobile](docs/screenshots/15-mobile-room-members.png) |
-
-<details>
-<summary>Voir les 16 captures disponibles</summary>
-
-1. [Connexion](docs/screenshots/01-signin.png)
-2. [Erreur de connexion](docs/screenshots/02-signin-error.png)
-3. [Creation de compte](docs/screenshots/03-signup.png)
-4. [Accueil et etats sociaux](docs/screenshots/04-home-social-states.png)
-5. [Recherche d'utilisateurs et de salons](docs/screenshots/05-search-users-rooms.png)
-6. [Recherche sans resultat](docs/screenshots/06-search-empty.png)
-7. [Salon general](docs/screenshots/07-room-general.png)
-8. [Salon frontend](docs/screenshots/08-room-frontend.png)
-9. [Conversation avec Bob](docs/screenshots/09-direct-message-bob.png)
-10. [Conversation avec Carole](docs/screenshots/10-direct-message-carole.png)
-11. [Accueil en theme clair](docs/screenshots/11-home-light-theme.png)
-12. [Accueil mobile](docs/screenshots/12-mobile-home.png)
-13. [Navigation mobile ouverte](docs/screenshots/13-mobile-navigation.png)
-14. [Salon sur mobile](docs/screenshots/14-mobile-room.png)
-15. [Liste des membres sur mobile](docs/screenshots/15-mobile-room-members.png)
-16. [Message prive sur mobile](docs/screenshots/16-mobile-direct-message.png)
-
-</details>
+| ![Connexion](docs/screenshots/01-signin.png) | ![Erreur de connexion](docs/screenshots/02-signin-error.png) |
+| Creation de compte | Accueil et relations sociales |
+| ![Creation de compte](docs/screenshots/03-signup.png) | ![Accueil](docs/screenshots/04-home-social-states.png) |
+| Recherche utilisateurs et salons | Recherche sans resultat |
+| ![Recherche](docs/screenshots/05-search-users-rooms.png) | ![Recherche vide](docs/screenshots/06-search-empty.png) |
+| Salon general | Salon frontend |
+| ![Salon general](docs/screenshots/07-room-general.png) | ![Salon frontend](docs/screenshots/08-room-frontend.png) |
+| Conversation avec Bob | Conversation avec Carole |
+| ![Conversation avec Bob](docs/screenshots/09-direct-message-bob.png) | ![Conversation avec Carole](docs/screenshots/10-direct-message-carole.png) |
+| Theme clair | Accueil mobile |
+| ![Theme clair](docs/screenshots/11-home-light-theme.png) | ![Accueil mobile](docs/screenshots/12-mobile-home.png) |
+| Navigation mobile | Salon sur mobile |
+| ![Navigation mobile](docs/screenshots/13-mobile-navigation.png) | ![Salon mobile](docs/screenshots/14-mobile-room.png) |
+| Membres du salon sur mobile | Message prive sur mobile |
+| ![Membres mobile](docs/screenshots/15-mobile-room-members.png) | ![Message prive mobile](docs/screenshots/16-mobile-direct-message.png) |
 
 ## Installation locale
 
@@ -173,6 +167,7 @@ chat/templates/chat/      interface HTML/CSS/JavaScript
 scripts/seed_demo.py      donnees de demonstration reproductibles
 scripts/capture_screenshots.py
 docs/screenshots/         galerie generee
+screenshots/              copie directe des 16 captures pour le ZIP
 requirements.txt          dependances Python
 ```
 
