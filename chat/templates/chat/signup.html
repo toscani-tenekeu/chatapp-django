@@ -1,0 +1,126 @@
+{% extends 'chat/base.html' %}
+{% block title %}Sign Up — KmerHosting Chat{% endblock %}
+{% block extra_css %}
+<style>
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    background: var(--bg-card);
+  }
+  .auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .auth-logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .auth-logo span {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .auth-title {
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: -0.16px;
+    margin-bottom: 8px;
+  }
+  .auth-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-sec);
+    margin-bottom: 6px;
+  }
+  .auth-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .auth-submit {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--bg-deep);
+    color: var(--text);
+    border: 1px solid var(--text);
+    cursor: pointer;
+    font-family: var(--font);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .auth-submit:hover { border-color: var(--green); color: var(--green); }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-dot"></div>
+      <span>KmerHosting Chat</span>
+    </div>
+    <div class="tag">Get started</div>
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-sub">Join and start chatting in seconds.</p>
+
+    {% if messages %}
+    <ul class="messages-flash">
+      {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="POST" action="{% url 'signup' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" placeholder="your_username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Repeat Password</label>
+        <input type="password" name="password2" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="auth-submit">Create account</button>
+    </form>
+
+    <div class="divider"></div>
+    <div class="auth-footer">
+      Already have an account? <a href="{% url 'signin' %}">Sign in</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

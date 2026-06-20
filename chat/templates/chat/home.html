@@ -1,0 +1,395 @@
+{% extends 'chat/base.html' %}
+{% block title %}KmerHosting Chat{% endblock %}
+{% block extra_css %}
+<style>
+  body { overflow:hidden; }
+  .app { display:flex;height:100vh; }
+
+  /* TOAST */
+  #toast-container { position:fixed;top:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px; }
+  .toast {
+    background:var(--bg-card);border:1px solid var(--green-border);
+    color:var(--text);padding:12px 16px;border-radius:8px;font-size:13px;
+    animation:toastIn 0.3s ease-out;min-width:240px;
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+  /* SIDEBAR */
+  .sidebar { width:280px;min-width:280px;background:var(--bg-deep);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden; }
+  .sidebar-header { padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+  .logo { display:flex;align-items:center;gap:8px; }
+  .logo-dot { width:8px;height:8px;border-radius:50%;background:var(--green); }
+  .logo-name { font-size:16px;font-weight:500; }
+  .user-badge { font-size:12px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:9999px;padding:4px 10px; }
+
+  .sidebar-search { padding:12px 16px;border-bottom:1px solid var(--border); }
+  .sidebar-search form { display:flex;gap:8px; }
+  .sidebar-search input { flex:1;padding:8px 12px;font-size:13px; }
+  .sidebar-search button { background:var(--green);color:#0f0f0f;border:none;border-radius:6px;padding:0 12px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:var(--font); }
+
+  .sidebar-scroll { flex:1;overflow-y:auto;padding:12px 0; }
+  .sidebar-scroll::-webkit-scrollbar { width:4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background:var(--border-mid);border-radius:4px; }
+
+  .section-label { font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:12px 16px 6px;display:flex;align-items:center;gap:8px; }
+  .notif-badge { background:var(--green);color:#0f0f0f;border-radius:9999px;font-size:10px;font-weight:500;padding:1px 6px; }
+
+  .friend-item, .room-item, .request-item { display:flex;align-items:center;padding:8px 16px;gap:8px;transition:background 0.1s;cursor:pointer; }
+  .friend-item:hover, .room-item:hover { background:rgba(255,255,255,0.03); }
+  .friend-link { display:flex;align-items:center;gap:8px;flex:1;text-decoration:none;min-width:0; }
+
+  .avatar-wrap { position:relative;flex-shrink:0; }
+  .avatar { width:32px;height:32px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--green); }
+  .online-dot { width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg-deep);position:absolute;bottom:-1px;right:-1px;display:none; }
+  .online-dot.active { display:block; }
+
+  .item-name { font-size:14px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .item-actions { display:flex;gap:4px;flex-shrink:0; }
+
+  .dm-badge { background:var(--green);color:#0f0f0f;border-radius:9999px;font-size:10px;font-weight:500;padding:1px 6px;display:none; }
+
+  .room-hash { color:var(--text-muted);font-size:14px;margin-right:2px; }
+  .divider-line { height:1px;background:var(--border);margin:8px 16px; }
+
+  .sidebar-footer { padding:12px 16px;border-top:1px solid var(--border); }
+  .logout-btn { display:block;width:100%;text-align:center;padding:8px;border-radius:6px;font-size:13px;color:var(--text-muted);border:1px solid var(--border);background:transparent;cursor:pointer;font-family:var(--font);transition:color 0.15s,border-color 0.15s;text-decoration:none; }
+  .logout-btn:hover { color:var(--text);border-color:var(--border-mid); }
+
+  /* MAIN */
+  .main { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;background:var(--bg); }
+  .welcome-icon { font-size:48px;margin-bottom:16px; }
+  .welcome-title { font-size:36px;font-weight:400;line-height:1.25;margin-bottom:8px;text-align:center; }
+  .welcome-sub { font-size:16px;color:var(--text-muted);margin-bottom:32px;text-align:center; }
+
+  /* SEARCH PANEL */
+  .search-panel { flex:1;overflow-y:auto;padding:24px 32px;background:var(--bg); }
+  .search-section-title { font-size:18px;font-weight:400;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border); }
+  .result-card { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg-card);transition:border-color 0.15s; }
+  .result-card:hover { border-color:var(--border-mid); }
+  .result-info { display:flex;align-items:center;gap:12px; }
+  .result-name { font-size:15px; }
+  .result-sub { font-size:12px;color:var(--text-muted);margin-top:2px; }
+
+  .create-room-form { display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg-deep); }
+  .create-room-form input { flex:1;font-size:13px; }
+
+  /* Offline status */
+  .friend-info { display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden; }
+  .friend-status { font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+
+  /* ── Mobile responsive ── */
+  .mobile-header { display:none;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--bg-deep);flex-shrink:0;height:49px;position:fixed;top:0;left:0;right:0;z-index:150; }
+  .hamburger { background:transparent;border:none;cursor:pointer;color:var(--text);font-size:22px;line-height:1;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .sidebar-close { display:none;background:transparent;border:none;cursor:pointer;color:var(--text-muted);font-size:22px;line-height:1;padding:4px;flex-shrink:0;margin-left:auto; }
+  .sidebar-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:149; }
+  .sidebar-overlay.active { display:block; }
+
+  @media (max-width:768px) {
+    body { overflow:hidden; }
+    .app { flex-direction:column; }
+    .mobile-header { display:flex; }
+    .sidebar-close { display:flex; }
+    .sidebar {
+      position:fixed;left:0;top:0;bottom:0;z-index:200;
+      height:100vh;transform:translateX(-100%);transition:transform 0.25s ease;
+    }
+    .sidebar.open { transform:translateX(0); }
+    .main { padding:16px;margin-top:49px;flex:1;overflow-y:auto;min-height:0; }
+    .search-panel { padding:16px;margin-top:49px;flex:1;overflow-y:auto;min-height:0; }
+    .welcome-title { font-size:24px; }
+    .welcome-sub { font-size:14px;margin-bottom:20px; }
+    .welcome-icon { font-size:36px; }
+    .result-card { padding:10px 12px; }
+  }
+
+  @media (max-width:480px) {
+    .sidebar { width:100vw;min-width:0; }
+    .item-actions { gap:3px; }
+    .btn-danger,.btn-ghost { padding:4px 8px;font-size:11px; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div id="toast-container"></div>
+<div class="mobile-header" id="mobile-header">
+  <button class="hamburger" id="hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="logo"><div class="logo-dot"></div><span class="logo-name">KmerHosting Chat</span></div>
+</div>
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo"><div class="logo-dot"></div><span class="logo-name">KmerHosting Chat</span></div>
+      <span class="user-badge">{{ request.user.username }}</span>
+      <button class="sidebar-close" id="sidebar-close" aria-label="Close menu">&#10005;</button>
+    </div>
+
+    <div class="sidebar-search">
+      <form method="GET" action="{% url 'home' %}">
+        <input type="text" name="q" placeholder="Search users or rooms…" value="{{ search_query }}">
+        <button type="submit">Go</button>
+      </form>
+    </div>
+
+    <div class="sidebar-scroll">
+      <!-- PENDING REQUESTS -->
+      <div id="pending-section" {% if not pending_requests %}style="display:none"{% endif %}>
+        <div class="section-label">
+          Requests <span class="notif-badge" id="request-badge">{{ pending_requests|length }}</span>
+        </div>
+        <div id="requests-list">
+          {% for req in pending_requests %}
+          <div class="request-item">
+            <div class="avatar-wrap"><div class="avatar">{{ req.from_user.username|first|upper }}</div></div>
+            <span class="item-name">{{ req.from_user.username }}</span>
+            <div class="item-actions">
+              <a href="{% url 'accept_friend_request' req.id %}"><button class="btn-ghost" style="color:var(--green);border-color:var(--green-border);">✓</button></a>
+              <a href="{% url 'reject_friend_request' req.id %}"><button class="btn-danger">✕</button></a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- FRIENDS -->
+      <div class="section-label">Friends</div>
+      <div id="friends-list">
+        {% for friend in friends %}
+        <div class="friend-item">
+          <a href="{% url 'dm' friend.username %}" class="friend-link">
+            <div class="avatar-wrap">
+              <div class="avatar">{{ friend.username|first|upper }}</div>
+              <div class="online-dot" id="online-{{ friend.username }}"></div>
+            </div>
+            <div class="friend-info">
+              <span class="item-name">{{ friend.username }}</span>
+              <span class="friend-status" id="offline-since-{{ friend.username }}"></span>
+            </div>
+          </a>
+          <span class="dm-badge" id="dm-badge-{{ friend.username }}">●</span>
+          <div class="item-actions">
+            <a href="{% url 'unfriend' friend.id %}"><button class="btn-danger">Unfriend</button></a>
+          </div>
+        </div>
+        {% empty %}
+        <div style="padding:8px 16px;font-size:13px;color:var(--text-muted);">No friends yet. Search to find people.</div>
+        {% endfor %}
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- MY ROOMS -->
+      <div class="section-label">My Rooms</div>
+      {% for room in my_rooms %}
+      <div class="room-item">
+        <span class="room-hash">#</span>
+        <a href="{% url 'room' room.name %}" class="item-name" style="color:var(--text);text-decoration:none;">{{ room.name }}</a>
+        <div class="item-actions">
+          <a href="{% url 'leave_room' room.id %}"><button class="btn-ghost">Leave</button></a>
+        </div>
+      </div>
+      {% empty %}
+      <div style="padding:8px 16px;font-size:13px;color:var(--text-muted);">No rooms joined yet.</div>
+      {% endfor %}
+    </div>
+
+    <form class="create-room-form" method="POST" action="{% url 'create_room' %}">
+      {% csrf_token %}
+      <input type="text" name="room_name" placeholder="New room name…">
+      <button type="submit" class="btn-green" style="border-radius:6px;padding:0 14px;font-size:13px;">+</button>
+    </form>
+
+    <div class="sidebar-footer">
+      <a href="{% url 'logout' %}" class="logout-btn">Sign out</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  {% if search_query %}
+  <div class="search-panel">
+    <h2 class="search-section-title">Results for "{{ search_query }}"</h2>
+    {% if search_users %}
+    <div class="section-label" style="padding:0 0 12px;">Users</div>
+    {% for u in search_users %}
+    <div class="result-card">
+      <div class="result-info">
+        <div class="avatar">{{ u.username|first|upper }}</div>
+        <div><div class="result-name">{{ u.username }}</div><div class="result-sub">Member</div></div>
+      </div>
+      <div class="item-actions">
+        {% if u.id in friend_ids %}
+          <a href="{% url 'dm' u.username %}"><button class="btn-ghost" style="color:var(--green);">💬 Message</button></a>
+        {% elif u.id in sent_requests %}
+          <span style="font-size:12px;color:var(--text-muted);">Request sent</span>
+        {% else %}
+          <a href="{% url 'send_friend_request' u.id %}"><button class="btn-ghost" style="color:var(--green);border-color:var(--green-border);">+ Add friend</button></a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% if search_rooms %}
+    <div class="section-label" style="padding:16px 0 12px;">Rooms</div>
+    {% for room in search_rooms %}
+    <div class="result-card">
+      <div class="result-info">
+        <div class="avatar" style="color:var(--text-muted);">#</div>
+        <div><div class="result-name">{{ room.name }}</div><div class="result-sub">{{ room.members.count }} member{{ room.members.count|pluralize }}</div></div>
+      </div>
+      <div class="item-actions">
+        {% if request.user in room.members.all %}
+          <a href="{% url 'room' room.name %}"><button class="btn-ghost" style="color:var(--green);">Open</button></a>
+        {% else %}
+          <a href="{% url 'join_room' room.id %}"><button class="btn-ghost" style="color:var(--green);border-color:var(--green-border);">Join</button></a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% if not search_users and not search_rooms %}
+    <div style="color:var(--text-muted);font-size:14px;padding:24px 0;">Nothing found for "{{ search_query }}".</div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="main">
+    <div class="welcome-icon">💬</div>
+    <h1 class="welcome-title">Welcome, {{ request.user.username }}</h1>
+    <p class="welcome-sub">Click a friend to chat, or search for people and rooms.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const me = "{{ request.user.username }}";
+let notifSocket = new WebSocket((location.protocol==='https:'?'wss':'ws') + '://' + window.location.host + '/ws/notifications/');
+
+const offlineSince = {};
+
+function setOnline(username, online) {
+  const dot = document.getElementById('online-' + username);
+  const status = document.getElementById('offline-since-' + username);
+  if (dot) dot.classList.toggle('active', online);
+  if (online) {
+    delete offlineSince[username];
+    if (status) status.textContent = '';
+  } else {
+    if (!offlineSince[username]) offlineSince[username] = Date.now();
+  }
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [u, since] of Object.entries(offlineSince)) {
+    const el = document.getElementById('offline-since-' + u);
+    if (!el) continue;
+    const secs = Math.floor((now - since) / 1000);
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    el.textContent = m > 0 ? `${m}m ${s}s ago` : `${s}s ago`;
+  }
+}, 1000);
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 3500);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function addRequestItem(fromUsername, requestId) {
+  const section = document.getElementById('pending-section');
+  const list = document.getElementById('requests-list');
+  const badge = document.getElementById('request-badge');
+  section.style.display = 'block';
+  const item = document.createElement('div');
+  item.className = 'request-item';
+  item.innerHTML = `
+    <div class="avatar-wrap"><div class="avatar">${fromUsername[0].toUpperCase()}</div></div>
+    <span class="item-name">${fromUsername}</span>
+    <div class="item-actions">
+      <a href="/friend/accept/${requestId}/"><button class="btn-ghost" style="color:var(--green);border-color:var(--green-border);">✓</button></a>
+      <a href="/friend/reject/${requestId}/"><button class="btn-danger">✕</button></a>
+    </div>`;
+  list.prepend(item);
+  badge.textContent = (parseInt(badge.textContent) || 0) + 1;
+}
+
+// ── Hibernation: go offline after 60 s of inactivity, wake on any interaction ──
+let hibernating = false;
+let inactivityTimer = null;
+const INACTIVITY_MS = 60000;
+
+function reconnectNotif() {
+  if (notifSocket && notifSocket.readyState === WebSocket.OPEN) return;
+  notifSocket = new WebSocket((location.protocol==='https:'?'wss':'ws') + '://' + window.location.host + '/ws/notifications/');
+  notifSocket.onmessage = onNotifMessage;
+}
+
+function onNotifMessage(e) {
+  const data = JSON.parse(e.data);
+  if (data.type === 'online_friends') {
+    data.friends.forEach(u => setOnline(u, true));
+  } else if (data.type === 'user_online') {
+    setOnline(data.username, true);
+  } else if (data.type === 'user_offline') {
+    setOnline(data.username, false);
+  } else if (data.type === 'friend_request') {
+    showToast(`🙋 ${data.from} sent you a friend request!`);
+    addRequestItem(data.from, data.request_id);
+  } else if (data.type === 'friend_accepted') {
+    showToast(`✅ ${data.by} accepted your friend request!`);
+    setTimeout(() => location.reload(), 1500);
+  } else if (data.type === 'new_dm') {
+    showToast(`💬 New message from ${data.from}`);
+    const badge = document.getElementById('dm-badge-' + data.from);
+    if (badge) badge.style.display = 'inline';
+  }
+}
+
+notifSocket.onmessage = onNotifMessage;
+
+function resetInactivity() {
+  clearTimeout(inactivityTimer);
+  if (hibernating) {
+    hibernating = false;
+    reconnectNotif();
+  }
+  inactivityTimer = setTimeout(() => {
+    hibernating = true;
+    if (notifSocket) notifSocket.close();
+  }, INACTIVITY_MS);
+}
+
+['mousemove','keydown','click','touchstart','scroll'].forEach(evt =>
+  document.addEventListener(evt, resetInactivity, {passive: true})
+);
+resetInactivity();
+
+// ── Mobile sidebar toggle ──
+const _ham = document.getElementById('hamburger');
+const _sidebarEl = document.querySelector('.sidebar');
+const _overlayEl = document.getElementById('sidebar-overlay');
+const _closeBtn = document.getElementById('sidebar-close');
+
+function openSidebar() {
+  _sidebarEl.classList.add('open');
+  _overlayEl.classList.add('active');
+  document.body.classList.add('sidebar-open');
+}
+function closeSidebar() {
+  _sidebarEl.classList.remove('open');
+  _overlayEl.classList.remove('active');
+  document.body.classList.remove('sidebar-open');
+}
+
+if (_ham && _sidebarEl && _overlayEl) {
+  _ham.addEventListener('click', openSidebar);
+  _overlayEl.addEventListener('click', closeSidebar);
+  if (_closeBtn) _closeBtn.addEventListener('click', closeSidebar);
+  _sidebarEl.querySelectorAll('a').forEach(a => a.addEventListener('click', closeSidebar));
+}
+</script>
+{% endblock %}

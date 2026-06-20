@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){var t=localStorage.getItem('nexchat-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}KmerHosting Chat{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Source+Code+Pro:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #171717;
+      --bg-deep: #0f0f0f;
+      --bg-card: #1e1e1e;
+      --border: #2e2e2e;
+      --border-mid: #363636;
+      --border-light: #393939;
+      --green: #3ecf8e;
+      --green-link: #00c573;
+      --green-border: rgba(62,207,142,0.3);
+      --text: #fafafa;
+      --text-sec: #b4b4b4;
+      --text-muted: #898989;
+      --font: 'DM Sans', Helvetica Neue, Arial, sans-serif;
+      --mono: 'Source Code Pro', Menlo, monospace;
+      --bubble-sent-bg: rgba(62,207,142,0.13);
+      --btn-text: #0f0f0f;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --bg-deep: #ffffff;
+      --bg-card: #eaeaea;
+      --border: #d8d8d8;
+      --border-mid: #cacaca;
+      --border-light: #bcbcbc;
+      --green: #16a06a;
+      --green-link: #0d8a5a;
+      --green-border: rgba(22,160,106,0.3);
+      --text: #111111;
+      --text-sec: #444444;
+      --text-muted: #757575;
+      --bubble-sent-bg: rgba(22,160,106,0.11);
+      --btn-text: #ffffff;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    a { color: var(--green-link); text-decoration: none; }
+    a:hover { color: var(--green); }
+
+    input, textarea {
+      font-family: var(--font);
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--green-border);
+    }
+    input::placeholder { color: var(--text-muted); }
+
+    .btn-primary {
+      background: var(--bg-deep);
+      color: var(--text);
+      border: 1px solid var(--text);
+      border-radius: 9999px;
+      padding: 8px 32px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-primary:hover { border-color: var(--green); color: var(--green); }
+
+    .btn-green {
+      background: var(--green);
+      color: var(--btn-text);
+      border: none;
+      border-radius: 9999px;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: opacity 0.15s;
+    }
+    .btn-green:hover { opacity: 0.85; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-mid); }
+
+    .btn-danger {
+      background: transparent;
+      color: #ff6b6b;
+      border: 1px solid rgba(255,107,107,0.3);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background 0.15s;
+    }
+    .btn-danger:hover { background: rgba(255,107,107,0.1); }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+    }
+
+    .messages-flash { list-style: none; }
+    .messages-flash li {
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.2);
+      color: #ff6b6b;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 9999;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .theme-toggle:hover { border-color: var(--green); }
+
+    @media (max-width: 768px) {
+      body.sidebar-open .theme-toggle { display: none; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light theme" aria-label="Toggle theme">🌙</button>
+  {% block content %}{% endblock %}
+  <script>
+    (function() {
+      const btn = document.getElementById('theme-toggle');
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      btn.textContent = current === 'dark' ? '🌙' : '☀️';
+      btn.addEventListener('click', function() {
+        const t = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = t === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('nexchat-theme', next);
+        btn.textContent = next === 'dark' ? '🌙' : '☀️';
+      });
+    })();
+  </script>
+</body>
+</html>
